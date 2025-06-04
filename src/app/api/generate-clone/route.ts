@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
 
-async function callLLM({ layout, screenshot, apiKey }: { layout: any; screenshot: string; apiKey: string }) {
+async function callLLM({ layout, screenshot, apiKey }: { layout: Record<string, unknown>; screenshot: string; apiKey: string }) {
   const openai = new OpenAI({ apiKey });
 
   // Limit layout arrays to 5 items each for brevity
-  function limitArray(arr: any[]) {
+  function limitArray(arr: unknown) {
     return Array.isArray(arr) ? arr.slice(0, 5) : [];
   }
   const limitedLayout = {
@@ -72,16 +72,20 @@ export async function POST(req: NextRequest) {
     }
     const result = await callLLM({ layout, screenshot, apiKey: key });
     return NextResponse.json({ html: result.html, css: result.css });
-  } catch (err: any) {
+  } catch (error) {
+    const err = error as Error;
     // Log error details for debugging
-    console.error("OpenAI error:", err);
+    console.error("OpenAI error:", error);
     let message = "Failed to generate code";
-    if (err?.response?.data?.error?.message) {
-      message = err.response.data.error.message;
+    if (error && typeof error === 'object' && 'response' in error) {
+      const apiError = error as { response?: { data?: { error?: { message?: string } } } };
+      if (apiError.response?.data?.error?.message) {
+        message = apiError.response.data.error.message;
+      }
     } else if (err?.message) {
       message = err.message;
-    } else if (typeof err === "string") {
-      message = err;
+    } else if (typeof error === "string") {
+      message = error;
     }
     return NextResponse.json({ error: message }, { status: 500 });
   }
