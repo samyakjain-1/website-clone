@@ -5,14 +5,9 @@ services:
   github:
     repo: samyakjain-1/website-clone
     branch: main
-  run_command: npm start
-  environment_slug: node-js
+  dockerfile_path: Dockerfile
   instance_count: 1
-  instance_size_slug: basic-xxs
-  build_command: |
-    npm ci
-    npx playwright install chromium
-    npm run build
+  instance_size_slug: basic-xs
   env:
   - key: NODE_ENV
     value: production
