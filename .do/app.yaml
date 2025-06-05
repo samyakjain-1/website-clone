@@ -1,0 +1,21 @@
+name: web-cloner
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: samyakjain-1/website-clone
+    branch: main
+  run_command: npm start
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  build_command: |
+    npm ci
+    npx playwright install chromium
+    npm run build
+  env:
+  - key: NODE_ENV
+    value: production
+  - key: OPENAI_API_KEY
+    scope: RUN_TIME
+    type: SECRET 
