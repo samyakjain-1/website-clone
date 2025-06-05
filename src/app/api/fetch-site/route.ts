@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
         combinedCss += `\n/* ${cssUrl} */\n` + cssText + "\n";
         // Replace original CSS URL with a local reference in HTML
         html = html.replace(new RegExp(cssUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g"), `./style${i}.css`);
-      } catch {
+      } catch (err) {
         // If fetch fails, skip this stylesheet
       }
     }
@@ -109,21 +109,21 @@ export async function POST(req: NextRequest) {
 
       const buttons = Array.from(document.querySelectorAll("button, a[role=button], input[type=button], input[type=submit]")).map(btn => ({
         tag: btn.tagName.toLowerCase(),
-        text: (btn as HTMLElement).innerText || "",
+        text: (btn as any).innerText || "",
         html: btn.outerHTML,
         styles: getStyles(btn),
       }));
 
       const headings = Array.from(document.querySelectorAll("h1, h2, h3, h4, h5, h6")).map(h => ({
         tag: h.tagName.toLowerCase(),
-        text: (h as HTMLElement).innerText || "",
+        text: (h as any).innerText || "",
         html: h.outerHTML,
         styles: getStyles(h),
       }));
 
       const textBlocks = Array.from(document.querySelectorAll("p, span, li")).map(el => ({
         tag: el.tagName.toLowerCase(),
-        text: (el as HTMLElement).innerText || "",
+        text: (el as any).innerText || "",
         html: el.outerHTML,
         styles: getStyles(el),
       }));
@@ -139,13 +139,12 @@ export async function POST(req: NextRequest) {
       css: combinedCss,
       layout,
     });
-  } catch (error) {
-    const err = error as Error;
+  } catch (err: any) {
     return NextResponse.json({ error: err.message || "Failed to fetch site" }, { status: 500 });
   }
 }
 
-async function handleLazyLoading(page: import('playwright').Page) {
+async function handleLazyLoading(page: any) {
   try {
     // Get the total height of the page
     const bodyHeight = await page.evaluate(() => document.body.scrollHeight);
@@ -169,7 +168,7 @@ async function handleLazyLoading(page: import('playwright').Page) {
     // Wait for any new network requests to complete
     try {
       await page.waitForLoadState('networkidle', { timeout: 2000 });
-    } catch {
+    } catch (e) {
       // Continue if network doesn't become idle within 2 seconds
     }
     
@@ -196,7 +195,7 @@ async function handleLazyLoading(page: import('playwright').Page) {
     await Promise.all(
       images.map((img) => {
         if (img.complete) return Promise.resolve();
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           img.addEventListener('load', resolve);
           img.addEventListener('error', resolve); // Resolve even on error
           // Timeout after 5 seconds per image
@@ -224,7 +223,7 @@ async function handleLazyLoading(page: import('playwright').Page) {
   // Final wait for any remaining network activity
   try {
     await page.waitForLoadState('networkidle', { timeout: 3000 });
-  } catch {
+  } catch (e) {
     // Continue if network doesn't become idle
   }
   

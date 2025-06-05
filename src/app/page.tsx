@@ -3,11 +3,11 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
 type LayoutSummary = {
-  navs: Array<Record<string, unknown>>;
-  sections: Array<Record<string, unknown>>;
-  buttons: Array<Record<string, unknown>>;
-  headings: Array<Record<string, unknown>>;
-  textBlocks: Array<Record<string, unknown>>;
+  navs: any[];
+  sections: any[];
+  buttons: any[];
+  headings: any[];
+  textBlocks: any[];
 };
 
 type FetchResult = {
@@ -21,8 +21,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<FetchResult | null>(null);
-  const [, setLlmHtml] = useState<string>("");
-  const [, setLlmCss] = useState<string>("");
+  const [llmHtml, setLlmHtml] = useState<string>("");
+  const [llmCss, setLlmCss] = useState<string>("");
   const [siteHtml, setSiteHtml] = useState<string>("");
   const [siteCss, setSiteCss] = useState<string>("");
   const [apiKey, setApiKey] = useState<string>("");
@@ -47,8 +47,7 @@ export default function Home() {
       const data = await res.json();
       setLlmHtml(data.html || "");
       setLlmCss(data.css || "");
-    } catch (error) {
-      console.error('Error generating code:', error);
+    } catch (err: any) {
       setLlmHtml("<!-- Error generating code -->");
       setLlmCss("/* Error generating code */");
     }
@@ -83,8 +82,7 @@ export default function Home() {
       setSiteHtml(data.html || "");
       setSiteCss(data.css || "");
       await generateCode(data.layout, data.screenshot);
-    } catch (error) {
-      const err = error as Error;
+    } catch (err: any) {
       setError(err.message || "Unknown error");
     } finally {
       setLoading(false);
